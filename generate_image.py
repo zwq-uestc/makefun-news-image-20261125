@@ -92,72 +92,93 @@ def letterspaced_w(draw, s, f, tracking=3) -> float:
     return sum(text_w(draw, ch, f) + tracking for ch in s) - tracking
 
 
+def draw_numeral(draw, x, y, s, f, fill, size):
+    """Draw a big numeral. A leading hyphen is drawn as a proper minus
+    bar, tight against the digits (the font's hyphen glyph is a short
+    thin dash that reads as detached). Returns the ink right edge."""
+    if s.startswith("-"):
+        rest = s[1:]
+        bb = draw.textbbox((0, 0), rest, font=f)
+        ink_h = bb[3] - bb[1]
+        bar_w = round(size * 0.40)
+        bar_h = max(4, round(ink_h * 0.14))
+        mid = y + (bb[1] + bb[3]) / 2
+        draw.rectangle([x, mid - bar_h / 2, x + bar_w, mid + bar_h / 2],
+                       fill=fill)
+        dx = x + bar_w + 3
+        draw.text((dx, y), rest, font=f, fill=fill)
+        return dx + bb[2]
+    bb = draw.textbbox((0, 0), s, font=f)
+    draw.text((x, y), s, font=f, fill=fill)
+    return x + bb[2]
+
+
 # ---------------------------------------------------------------- masthead
 def paint_masthead(draw) -> int:
-    y = 30
+    y = 24
     kick = font(SANS_BOLD, 20)
     left = "WORLD NEWS"
     right = "ONE DAY · ONE IMAGE"
     letterspaced(draw, MARGIN, y, left, kick, BRICK)
     rw = letterspaced_w(draw, right, kick)
     letterspaced(draw, W - MARGIN - rw, y, right, kick, FAINT_INK)
-    y += 32
+    y += 28
 
     date_font = font(SERIF_DISPLAY_BOLD, 60)
     date = "Wednesday 25 November 2026"
     dw = text_w(draw, date, date_font)
     draw.text(((W - dw) / 2, y), date, font=date_font, fill=INK)
-    y += 76
+    y += 74
 
     sub = font(SERIF_REG, 23)
     line = "The day's most consequential stories, drawn on one page"
     lw = text_w(draw, line, sub)
     draw.text(((W - lw) / 2, y), line, font=sub, fill=FAINT_INK)
-    y += 36
+    y += 33
 
     # double rule, newspaper style
     draw.line([(MARGIN, y), (W - MARGIN, y)], fill=INK, width=3)
     draw.line([(MARGIN, y + 7), (W - MARGIN, y + 7)], fill=INK, width=1)
-    return y + 24
+    return y + 18
 
 
 # ---------------------------------------------------------------- hero
 def paint_hero(draw, top: int) -> int:
-    height = 332
+    height = 339
     draw.rectangle([MARGIN, top, W - MARGIN, top + height], fill=HERO_BG)
     pad = 32
     x0 = MARGIN + pad
-    chart_x = 606
+    chart_x = 624
     text_w_max = chart_x - x0 - 28
 
-    y = top + 24
+    y = top + 22
     letterspaced(draw, x0, y, "STRAIT OF HORMUZ · MIDDLE EAST",
                  font(SANS_BOLD, 19), BAR_LO)
-    y += 34
+    y += 30
 
     headline = font(SERIF_BOLD, 42)
     y = draw_block(draw, x0, y,
                    "Iran orders Hormuz shut \u201cfurther day by day\u201d",
-                   headline, HERO_TEXT, text_w_max, 50)
-    y += 6
+                   headline, HERO_TEXT, text_w_max, 54)
+    y += 8
 
-    stand = font(SANS_REG, 22)
+    stand = font(SANS_REG, 20)
     y = draw_block(
         draw, x0, y,
         "Tehran's army chief orders the navy to tighten the closure until "
         "Iran's seven conditions are met. The Revolutionary Guards say two "
         "more tankers hit mines at dawn on Wednesday.",
-        stand, HERO_FAINT, text_w_max, 30)
+        stand, HERO_FAINT, text_w_max, 24)
 
     # --- ship-traffic chart, right column
     cx = chart_x
-    cy = top + 24
+    cy = top + 22
     letterspaced(draw, cx, cy, "GULF SHIP TRAFFIC", font(SANS_BOLD, 18), HERO_TEXT)
-    cy += 27
+    cy += 26
     cap = font(SANS_REG, 18)
     cy = draw_block(draw, cx, cy, "Vessels entering or leaving the Gulf",
-                    cap, HERO_FAINT, W - MARGIN - pad - cx, 23)
-    cy += 10
+                    cap, HERO_FAINT, W - MARGIN - pad - cx, 22)
+    cy += 12
 
     bars = [("First week of November", 226, BAR_HI),
             ("17\u201323 November", 125, BAR_LO)]
@@ -170,14 +191,14 @@ def paint_hero(draw, top: int) -> int:
         bw = bar_max_w * value / 226
         draw.rectangle([cx, cy, cx + bw, cy + 26], fill=colour)
         draw.text((cx + bw + 12, cy - 2), str(value), font=num_f, fill=HERO_TEXT)
-        cy += 44
+        cy += 45
 
-    cy += 2
+    cy += 4
     big = font(SERIF_DISPLAY_BOLD, 50)
-    draw.text((cx, cy), "-45%", font=big, fill=BAR_LO)
-    cy += 60
+    draw_numeral(draw, cx, cy, "-45%", big, BAR_LO, 50)
+    cy += 64
     draw_block(draw, cx, cy, "traffic through the strait in a month",
-               font(SANS_REG, 18), HERO_FAINT, W - MARGIN - pad - cx, 23)
+               font(SANS_REG, 18), HERO_FAINT, W - MARGIN - pad - cx, 22)
 
     return top + height
 
@@ -223,28 +244,27 @@ def paint_card(draw, x, y, w, h, card):
     draw.rectangle([x, y, x + w, y + h], fill=CARD_BG, outline=INK, width=2)
     pad = 20
     inner_w = w - 2 * pad
-    cy = y + 14
+    cy = y + 11
 
     letterspaced(draw, x + pad, cy, card["kicker"], font(SANS_BOLD, 17), BRICK)
-    cy += 26
+    cy += 28
 
-    # numeral and headline share one band
+    # numeral and headline share one band; fixed ink-to-ink gutter
     num_f = font(SERIF_DISPLAY_BOLD, 50)
-    num_w = text_w(draw, card["numeral"], num_f)
-    draw.text((x + pad, cy), card["numeral"], font=num_f, fill=INK)
-    head_x = x + pad + num_w + 18
+    ink_right = draw_numeral(draw, x + pad, cy, card["numeral"], num_f, INK, 50)
+    head_x = ink_right + 20
     draw_block(draw, head_x, cy + 4, card["headline"],
-               font(SERIF_BOLD, 26), INK, x + pad + inner_w - head_x, 32)
-    cy += 62
+               font(SERIF_BOLD, 25), INK, x + pad + inner_w - head_x, 33)
+    cy += 74
 
     draw_block(draw, x + pad, cy, card["body"],
-               font(SANS_REG, 20), FAINT_INK, inner_w, 27)
+               font(SANS_REG, 18), FAINT_INK, inner_w, 22)
 
 
 def paint_cards(draw, top: int) -> int:
-    gutter = 18
+    gutter = 14
     card_w = (CONTENT_W - gutter) // 2
-    card_h = 208
+    card_h = 218
     for i, card in enumerate(CARDS):
         cx = MARGIN + (i % 2) * (card_w + gutter)
         cy = top + (i // 2) * (card_h + gutter)
@@ -254,9 +274,9 @@ def paint_cards(draw, top: int) -> int:
 
 # ---------------------------------------------------------------- footer
 def paint_footer(draw, top: int) -> None:
-    y = top + 12
+    y = top + 6
     draw.line([(MARGIN, y), (W - MARGIN, y)], fill=INK, width=1)
-    y += 10
+    y += 6
     note = font(SANS_REG, 17)
     left = "Sources: Reuters · CNN · Arab News · Al Jazeera (MarineTraffic data)"
     draw.text((MARGIN, y), left, font=note, fill=FAINT_INK)
@@ -272,7 +292,7 @@ def main() -> None:
 
     y = paint_masthead(draw)
     y = paint_hero(draw, y)
-    y = paint_cards(draw, y + 16)
+    y = paint_cards(draw, y + 11)
     paint_footer(draw, y)
 
     out = HERE / "entry.png"
