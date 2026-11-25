@@ -122,81 +122,81 @@ def paint_masthead(draw) -> int:
     letterspaced(draw, MARGIN, y, left, kick, BRICK)
     rw = letterspaced_w(draw, right, kick)
     letterspaced(draw, W - MARGIN - rw, y, right, kick, FAINT_INK)
-    y += 28
+    y += 29
 
-    date_font = font(SERIF_DISPLAY_BOLD, 60)
+    date_font = font(SERIF_DISPLAY_BOLD, 58)
     date = "Wednesday 25 November 2026"
     dw = text_w(draw, date, date_font)
     draw.text(((W - dw) / 2, y), date, font=date_font, fill=INK)
-    y += 74
+    y += 70
 
     sub = font(SERIF_REG, 23)
     line = "The day's most consequential stories, drawn on one page"
     lw = text_w(draw, line, sub)
     draw.text(((W - lw) / 2, y), line, font=sub, fill=FAINT_INK)
-    y += 33
+    y += 32
 
     # double rule, newspaper style
     draw.line([(MARGIN, y), (W - MARGIN, y)], fill=INK, width=3)
     draw.line([(MARGIN, y + 7), (W - MARGIN, y + 7)], fill=INK, width=1)
-    return y + 18
+    return y + 20
 
 
 # ---------------------------------------------------------------- hero
 def paint_hero(draw, top: int) -> int:
-    height = 339
+    height = 334
     draw.rectangle([MARGIN, top, W - MARGIN, top + height], fill=HERO_BG)
-    pad = 32
+    pad = 36
     x0 = MARGIN + pad
-    chart_x = 624
+    chart_x = 616
     text_w_max = chart_x - x0 - 28
 
-    y = top + 22
+    y = top + 24
     letterspaced(draw, x0, y, "STRAIT OF HORMUZ · MIDDLE EAST",
                  font(SANS_BOLD, 19), BAR_LO)
     y += 30
 
-    headline = font(SERIF_BOLD, 42)
+    headline = font(SERIF_BOLD, 40)
     y = draw_block(draw, x0, y,
                    "Iran orders Hormuz shut \u201cfurther day by day\u201d",
-                   headline, HERO_TEXT, text_w_max, 54)
-    y += 8
+                   headline, HERO_TEXT, text_w_max, 51)
+    y += 9
 
-    stand = font(SANS_REG, 20)
+    stand = font(SANS_REG, 19)
     y = draw_block(
         draw, x0, y,
         "Tehran's army chief orders the navy to tighten the closure until "
         "Iran's seven conditions are met. The Revolutionary Guards say two "
         "more tankers hit mines at dawn on Wednesday.",
-        stand, HERO_FAINT, text_w_max, 24)
+        stand, HERO_FAINT, text_w_max, 22)
 
     # --- ship-traffic chart, right column
     cx = chart_x
-    cy = top + 22
+    cy = top + 24
     letterspaced(draw, cx, cy, "GULF SHIP TRAFFIC", font(SANS_BOLD, 18), HERO_TEXT)
-    cy += 26
+    cy += 27
     cap = font(SANS_REG, 18)
     cy = draw_block(draw, cx, cy, "Vessels entering or leaving the Gulf",
                     cap, HERO_FAINT, W - MARGIN - pad - cx, 22)
-    cy += 12
+    cy += 13
 
     bars = [("First week of November", 226, BAR_HI),
             ("17\u201323 November", 125, BAR_LO)]
-    bar_max_w = 268
+    bar_max_w = 250
     label_f = font(SANS_SEMI, 19)
     num_f = font(SANS_BOLD, 28)
     for label, value, colour in bars:
         draw.text((cx, cy), label, font=label_f, fill=HERO_TEXT)
-        cy += 27
+        cy += 26
         bw = bar_max_w * value / 226
         draw.rectangle([cx, cy, cx + bw, cy + 26], fill=colour)
-        draw.text((cx + bw + 12, cy - 2), str(value), font=num_f, fill=HERO_TEXT)
-        cy += 45
+        draw.text((cx + bw + 18, cy - 2), str(value), font=num_f, fill=HERO_TEXT)
+        cy += 43
 
-    cy += 4
+    cy += 5
     big = font(SERIF_DISPLAY_BOLD, 50)
     draw_numeral(draw, cx, cy, "-45%", big, BAR_LO, 50)
-    cy += 64
+    cy += 56
     draw_block(draw, cx, cy, "traffic through the strait in a month",
                font(SANS_REG, 18), HERO_FAINT, W - MARGIN - pad - cx, 22)
 
@@ -242,9 +242,9 @@ CARDS = [
 
 def paint_card(draw, x, y, w, h, card):
     draw.rectangle([x, y, x + w, y + h], fill=CARD_BG, outline=INK, width=2)
-    pad = 20
+    pad = 24
     inner_w = w - 2 * pad
-    cy = y + 11
+    cy = y + 16
 
     letterspaced(draw, x + pad, cy, card["kicker"], font(SANS_BOLD, 17), BRICK)
     cy += 28
@@ -255,10 +255,10 @@ def paint_card(draw, x, y, w, h, card):
     head_x = ink_right + 20
     draw_block(draw, head_x, cy + 4, card["headline"],
                font(SERIF_BOLD, 25), INK, x + pad + inner_w - head_x, 33)
-    cy += 74
+    cy += 70
 
     draw_block(draw, x + pad, cy, card["body"],
-               font(SANS_REG, 18), FAINT_INK, inner_w, 22)
+               font(SANS_REG, 17), FAINT_INK, inner_w, 20)
 
 
 def paint_cards(draw, top: int) -> int:
@@ -276,7 +276,7 @@ def paint_cards(draw, top: int) -> int:
 def paint_footer(draw, top: int) -> None:
     y = top + 6
     draw.line([(MARGIN, y), (W - MARGIN, y)], fill=INK, width=1)
-    y += 6
+    y += 5
     note = font(SANS_REG, 17)
     left = "Sources: Reuters · CNN · Arab News · Al Jazeera (MarineTraffic data)"
     draw.text((MARGIN, y), left, font=note, fill=FAINT_INK)
@@ -292,7 +292,7 @@ def main() -> None:
 
     y = paint_masthead(draw)
     y = paint_hero(draw, y)
-    y = paint_cards(draw, y + 11)
+    y = paint_cards(draw, y + 13)
     paint_footer(draw, y)
 
     out = HERE / "entry.png"
